@@ -1,0 +1,412 @@
+package com.itheima.mobilesafe;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import net.tsz.afinal.FinalHttp;
+import net.tsz.afinal.http.AjaxCallBack;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
+import android.os.SystemClock;
+import android.util.Log;
+import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.itheima.mobilesafe.activitys.HomeActivity;
+import com.itheima.mobilesafe.service.UpdateAppWidgetService;
+import com.itheima.mobilesafe.utils.StreamTools;
+
+/**
+ * 第一个也：loginActivity
+ * 
+ * @author afu
+ * 
+ */
+
+public class SplashActivity extends Activity {
+
+	protected static final int ENTER_HOME = 1;
+
+	protected static final int SHOW_UPDATE_DIALOG = 2;
+
+	protected static final int URL_ERROR = 3;
+
+	protected static final int NETWORK_ERROR = 4;
+
+	protected static final int JSON_ERROR = 5;
+
+	protected static final String TAG = "SplashActivity";
+
+	private TextView tv_splash_version;
+
+	private String description;
+	private String apkurl;
+
+	private Handler handler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			switch (msg.what) {
+			case ENTER_HOME:// 进入主页面
+				enterHome();
+				Log.i(TAG, "进入主页面");
+
+				break;
+			case SHOW_UPDATE_DIALOG:// 弹出升级对话框
+				Log.i(TAG, "弹出升级对话框");
+				showUpdateDialog();
+				break;
+			case URL_ERROR:// URL错误
+				enterHome();
+				Toast.makeText(SplashActivity.this, "URL错误", 1).show();
+
+				break;
+			case NETWORK_ERROR:// 网络异常
+				enterHome();
+				Toast.makeText(getApplicationContext(), "网络异常", 1).show();
+
+				break;
+			case JSON_ERROR:// JSON解析出错了
+				enterHome();
+				Toast.makeText(getApplicationContext(), "JSON解析出错了", 1).show();
+				break;
+
+			default:
+				break;
+			}
+		}
+
+	};
+
+	private void enterHome() {
+		Intent intent = new Intent(this, HomeActivity.class);
+		startActivity(intent);
+		// 当前页面关闭
+		finish();
+
+	};
+
+	protected void showUpdateDialog() {
+		// this 等价于 SplashActivity.this
+		// 换成getApplicationContext()
+		AlertDialog.Builder builder = new Builder(SplashActivity.this);
+		builder.setTitle("发现新版本");
+		// builder.setCancelable(false);//强制升级
+		builder.setOnCancelListener(new OnCancelListener() {
+
+			@Override
+			public void onCancel(DialogInterface dialog) {
+				// TODO Auto-generated method stub
+				enterHome();
+			}
+		});
+		builder.setMessage(description);
+		builder.setNeutralButton("立刻升级", new OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+
+				if (Environment.getExternalStorageState().equals(
+						Environment.MEDIA_MOUNTED)) {
+					// 下载APK，替换安装-sdcard
+					FinalHttp http = new FinalHttp();
+					http.download(apkurl,
+							Environment.getExternalStorageDirectory()
+									+ "/mobilesafe2.0.apk",
+							new AjaxCallBack<File>() {
+
+								@Override
+								public void onFailure(Throwable t, int errorNo,
+										String strMsg) {
+									// TODO Auto-generated method stub
+									t.printStackTrace();
+									Toast.makeText(getApplicationContext(),
+											"下载失败了", 1).show();
+									super.onFailure(t, errorNo, strMsg);
+								}
+
+								@Override
+								public void onLoading(long count, long current) {
+									// TODO Auto-generated method stub
+									tv_update_info.setVisibility(View.VISIBLE);
+									int progress = (int) (current * 100 / count);
+									tv_update_info.setText("下载进度：" + progress
+											+ "%");
+
+									super.onLoading(count, current);
+								}
+
+								@Override
+								public void onSuccess(File t) {
+									installApk(t);
+									Toast.makeText(getApplicationContext(),
+											"下载成功", 1).show();
+									super.onSuccess(t);
+								}
+
+								// 安装应用
+								private void installApk(File t) {
+									// <intent-filter>
+									// <action
+									// android:name="android.intent.action.VIEW"
+									// />
+									// <category
+									// android:name="android.intent.category.DEFAULT"
+									// />
+									// <data android:scheme="content" />
+									// <data android:scheme="file" />
+									// <data
+									// android:mimeType="application/vnd.android.package-archive"
+									// />
+									// </intent-filter>
+									Intent intent = new Intent();
+									intent.setAction("android.intent.action.VIEW");
+									intent.setDataAndType(Uri.fromFile(t),
+											"application/vnd.android.package-archive");
+									startActivity(intent);
+
+								}
+
+							});
+
+				} else {
+					Toast.makeText(getApplicationContext(), "sd卡不可用，请检查", 1)
+							.show();
+				}
+
+			}
+		});
+		builder.setPositiveButton("下次再说", new OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// 消掉对话框
+				dialog.dismiss();
+				// 进入主页面
+				enterHome();
+
+			}
+		});
+
+		builder.show();
+
+	}
+
+	private TextView tv_update_info;
+	private SharedPreferences sp;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		setContentView(R.layout.activity_splash);
+		sp = getSharedPreferences("config", MODE_PRIVATE);
+		tv_splash_version = (TextView) findViewById(R.id.tv_splash_version);
+		tv_update_info = (TextView) findViewById(R.id.tv_update_info);
+		tv_splash_version.setText("版本：" + getVersion());
+		AlphaAnimation aa = new AlphaAnimation(0.2f, 1.0f);
+		aa.setDuration(1000);
+		findViewById(R.id.rl_root).startAnimation(aa);
+		boolean update = sp.getBoolean("update", false);
+		createShortcut();
+		copyDB("address.db");
+		copyDB("commonnum.db");
+		copyDB("antivirus.db");
+		if (update) {
+			// 检查升级
+			checkUpdate();
+		} else {
+			// 进入主页面，延迟2秒
+			handler.postDelayed(new Runnable() {
+
+				@Override
+				public void run() {
+					enterHome();
+				}
+			}, 2000);
+		}
+
+	}
+
+	//创建快捷键
+	private void createShortcut() {
+		
+		if(sp.getBoolean("shortcutinstalled", false)){
+			return;
+		}
+		Intent intent = new Intent();
+		// 动作
+		intent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
+		// 图标
+		intent.putExtra(Intent.EXTRA_SHORTCUT_ICON,
+				BitmapFactory.decodeResource(getResources(), R.drawable.app));
+		// 名称
+		intent.putExtra(Intent.EXTRA_SHORTCUT_NAME, "手机卫士");
+		
+		
+		//动作，当你点击我的时候要我干什么
+		Intent callNumber = new Intent();
+		//直接进入主页面,自定义Action
+		callNumber.setAction("com.itheima.mobilesafe.enterhome");
+		
+		
+		intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, callNumber);
+		
+		
+		sendBroadcast(intent);
+		
+		Editor editor = sp.edit();
+		editor.putBoolean("shortcutinstalled", true);
+		editor.commit();
+		
+	}
+
+	/**
+	 * 把assets目录下的address.db拷贝到
+	 * /data/data/com.itheima.mobilesafe/files/address.db";
+	 */
+	private void copyDB(String dbname) {
+		InputStream is = null;
+		FileOutputStream fos = null;
+		File file = new File(getFilesDir(), dbname);
+		if(file.exists()){
+			System.out.println("数据库已经存在不需要拷贝");
+		}else{
+			try {
+				is = getAssets().open(dbname);
+			
+				fos = new FileOutputStream(file);
+				int len = 0;
+				byte[] buffer = new byte[1024];
+				while ((len = is.read(buffer)) != -1) {
+					fos.write(buffer, 0, len);
+				}
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				try {
+					is.close();
+					fos.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			}
+
+		}
+		
+	}
+
+	/**
+	 * 升级
+	 */
+	private void checkUpdate() {
+
+		new Thread() {
+			public void run() {
+				Message msg = Message.obtain();
+				long startTime = System.currentTimeMillis();
+				try {
+					URL url = new URL(getString(R.string.serverurl));
+					HttpURLConnection conn = (HttpURLConnection) url
+							.openConnection();
+					conn.setRequestMethod("GET");
+					conn.setConnectTimeout(4000);
+					int code = conn.getResponseCode();
+
+					if (code == 200) {
+						// 请求成功
+						InputStream is = conn.getInputStream();
+						// 面向组件编程
+						String result = StreamTools.readFromStream(is);
+						System.out.println("result=" + result);
+
+						// 解析json
+						JSONObject obj = new JSONObject(result);
+						// 服务器的版本号
+						String version = (String) obj.get("version");
+						description = (String) obj.get("description");
+						apkurl = (String) obj.get("apkurl");
+						if (getVersion().equals(version)) {
+							// 版本一致，没有新版本，进入主页
+							msg.what = ENTER_HOME;
+						} else {
+							// 发现新版本，弹出对话框，让用户选择是否升级
+							msg.what = SHOW_UPDATE_DIALOG;
+						}
+
+					}
+
+				} catch (MalformedURLException e) {
+					msg.what = URL_ERROR;
+					e.printStackTrace();
+				} catch (IOException e) {
+					msg.what = NETWORK_ERROR;
+					e.printStackTrace();
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					msg.what = JSON_ERROR;
+				} finally {
+					long endTime = System.currentTimeMillis();
+					long dTime = endTime - startTime;
+					if (dTime < 2000) {
+						SystemClock.sleep(2000 - dTime);
+					}
+
+					handler.sendMessage(msg);
+				}
+
+			};
+		}.start();
+
+	}
+
+	/**
+	 * 动态获取版本名
+	 */
+
+	private String getVersion() {
+		// PackgeManager//包管理器
+		PackageManager pm = getPackageManager();
+		// 得到功能清单文件信息
+		try {
+			PackageInfo packInfo = pm.getPackageInfo(getPackageName(), 0);
+			return packInfo.versionName;
+		} catch (NameNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+
+	}
+
+}

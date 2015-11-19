@@ -1,0 +1,41 @@
+package com.itheima.mobilesafe.activitys;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.StatFs;
+import android.text.format.Formatter;
+import android.widget.TextView;
+
+import com.itheima.mobilesafe.R;
+
+public class AppManagerActivity extends Activity {
+	private TextView tv_rom_avail;
+	private TextView tv_sd_avail;
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_app_manager);
+		tv_rom_avail = (TextView) findViewById(R.id.tv_rom_avail);
+		tv_sd_avail = (TextView) findViewById(R.id.tv_sd_avail);
+		tv_rom_avail.setText("内存可用："+getSpaceAvail(Environment.getDataDirectory().getAbsolutePath()));
+		tv_sd_avail.setText("sdcard可用："+getSpaceAvail(Environment.getExternalStorageDirectory().getAbsolutePath()));
+	}
+	/**
+	 * 得到任意目录的可用空间
+	 * @param path
+	 * @return
+	 */
+	private String getSpaceAvail(String path){
+		
+		
+		StatFs statFs = new StatFs(path);
+		//每一块有多大
+		long size =  statFs.getBlockSize();
+		//一共有多少块
+		long blocks = statFs.getAvailableBlocks();
+		
+		return Formatter.formatFileSize(this, size*blocks);
+	}
+
+}

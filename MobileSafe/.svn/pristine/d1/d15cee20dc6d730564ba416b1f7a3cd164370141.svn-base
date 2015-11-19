@@ -1,0 +1,96 @@
+package com.itheima.mobilesafe.activitys;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+
+import com.itheima.mobilesafe.R;
+import com.itheima.mobilesafe.service.AddressService;
+import com.itheima.mobilesafe.ui.SettingItemView;
+import com.itheima.mobilesafe.utils.ServiceStatusUtils;
+/**
+ * 设置中心
+ * @author afu
+ *
+ */
+public class SettingActivity extends Activity {
+	
+	//设置自动更新
+	private SettingItemView siv_update;
+	private SharedPreferences sp;
+	
+	//设置来电显示
+    private SettingItemView siv_show_address;
+    private Intent showAddressIntent;
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_setting);
+		sp = getSharedPreferences("config", MODE_PRIVATE);
+		siv_update = (SettingItemView) findViewById(R.id.siv_update);
+		boolean update = sp.getBoolean("update", false);
+		if(update){
+			//已经勾选
+			siv_update.setChecked(true);
+		}else{
+			//没有勾选
+			siv_update.setChecked(false);
+		}
+		siv_update.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Editor editor = sp.edit();
+				
+				if(siv_update.isChecked()){
+					//设置为非勾选
+					siv_update.setChecked(false);
+					editor.putBoolean("update", false);
+				}else{
+					//设置为勾选
+					siv_update.setChecked(true);
+					editor.putBoolean("update", true);
+				}
+				editor.commit();
+				
+			}
+		});
+		//设置来电显示
+		siv_show_address = (SettingItemView) findViewById(R.id.siv_show_address);
+		//检验服务是否运行
+		boolean isRunning = ServiceStatusUtils.isServiceRunning(this, "com.itheima.mobilesafe.service.AddressService");
+		siv_show_address.setChecked(isRunning);
+		showAddressIntent = new Intent(this,AddressService.class);
+		siv_show_address.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if(siv_show_address.isChecked()){
+					//非勾选状态
+					siv_show_address.setChecked(false);
+					//服务停止
+					stopService(showAddressIntent);
+				}else{
+					//勾选装状态
+					siv_show_address.setChecked(true);
+					//服务启动
+					startService(showAddressIntent);
+				}
+				
+			}
+		});
+		
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		boolean isRunning = ServiceStatusUtils.isServiceRunning(this, "com.itheima.mobilesafe.service.AddressService");
+		siv_show_address.setChecked(isRunning);
+	}
+
+}

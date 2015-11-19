@@ -1,0 +1,419 @@
+package com.itheima.mobilesafe.activitys;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.app.ActionBar.LayoutParams;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.StatFs;
+import android.text.format.Formatter;
+import android.view.Gravity;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.ScaleAnimation;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.itheima.mobilesafe.R;
+import com.itheima.mobilesafe.domain.AppInfo;
+import com.itheima.mobilesafe.engine.AppInfoProvider;
+import com.itheima.mobilesafe.utils.DensityUtil;
+
+public class AppManagerActivity extends Activity implements OnClickListener {
+	private TextView tv_rom_avail;
+	private TextView tv_sd_avail;
+
+	private ListView list_app_item;
+	private LinearLayout ll_loading;
+	private List<AppInfo> appInfos;
+	private List<AppInfo> userappInfos;// 用户软件集合
+	private List<AppInfo> systemappInfos;// 系统软件集合
+	private AppAdapter adapter;
+	private TextView tv_status;
+	private PopupWindow window;
+	
+	private AppInfo appInfo;
+
+	private LinearLayout ll_uninstall;
+	private LinearLayout ll_start;
+	private LinearLayout ll_share;
+	private Handler handler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			ll_loading.setVisibility(View.INVISIBLE);
+			adapter = new AppAdapter();
+			list_app_item.setAdapter(adapter);
+		};
+	};
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_app_manager);
+		tv_rom_avail = (TextView) findViewById(R.id.tv_rom_avail);
+		tv_sd_avail = (TextView) findViewById(R.id.tv_sd_avail);
+		list_app_item = (ListView) findViewById(R.id.list_app_item);
+		ll_loading = (LinearLayout) findViewById(R.id.ll_loading);
+		tv_status = (TextView) findViewById(R.id.tv_status);
+		tv_rom_avail.setText("内存可用："
+				+ getSpaceAvail(Environment.getDataDirectory()
+						.getAbsolutePath()));
+		tv_sd_avail.setText("sdcard可用："
+				+ getSpaceAvail(Environment.getExternalStorageDirectory()
+						.getAbsolutePath()));
+
+		fillData();
+		list_app_item.setOnScrollListener(new OnScrollListener() {
+
+			@Override
+			public void onScrollStateChanged(AbsListView view, int scrollState) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onScroll(AbsListView view, int firstVisibleItem,
+					int visibleItemCount, int totalItemCount) {
+				dimssPopupWindow();
+				if (systemappInfos != null && userappInfos != null) {
+					if (firstVisibleItem > userappInfos.size()) {
+						// 显示系统程序
+						tv_status.setText("系统程序(" + systemappInfos.size() + ")");
+					} else {
+						// 显示用户程序
+						tv_status.setText("用户程序(" + userappInfos.size() + ")");
+					}
+				}
+
+			}
+		});
+
+		list_app_item.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				Object obj = list_app_item.getItemAtPosition(position);
+				if (obj != null) {
+					dimssPopupWindow();
+					appInfo = (AppInfo) obj;
+					System.out.println("appInfo=" + appInfo.getPackName());
+					// TextView contentView = new
+					// TextView(AppManagerActivity.this);
+					// contentView.setTextColor(Color.RED);
+					// contentView.setText(appInfo.getPackName());
+					View contentView = View.inflate(AppManagerActivity.this,
+							R.layout.popupwindow_item, null);
+					ll_uninstall = (LinearLayout) contentView
+							.findViewById(R.id.ll_uninstall);
+					ll_start = (LinearLayout) contentView
+							.findViewById(R.id.ll_start);
+					ll_share = (LinearLayout) contentView
+							.findViewById(R.id.ll_share);
+					ll_uninstall.setOnClickListener(AppManagerActivity.this);
+					ll_start.setOnClickListener(AppManagerActivity.this);
+					ll_share.setOnClickListener(AppManagerActivity.this);
+					window = new PopupWindow(contentView, -2,
+							LayoutParams.WRAP_CONTENT);
+					window.setBackgroundDrawable(new ColorDrawable(
+							Color.TRANSPARENT));
+					int[] location = new int[2];
+					view.getLocationInWindow(location);
+					
+					//1.在布局文件通常要写dip,不建议写px;2.在代码里写长度和宽度的单位都是px
+					//把它当成是dip，然后转成对应的px，然后设置进去。
+					int px = DensityUtil.dip2px(AppManagerActivity.this, 60);
+					System.out.println("px========="+px);
+					window.showAtLocation(parent, Gravity.TOP + Gravity.LEFT,
+							px, location[1]);
+					AlphaAnimation aa = new AlphaAnimation(0.2f, 1.0f);
+					aa.setDuration(500);
+					ScaleAnimation sa = new ScaleAnimation(0.5f, 1.0f, 0.5f,
+							1.0f, Animation.RELATIVE_TO_SELF, 0,
+							Animation.RELATIVE_TO_SELF, 0.5f);
+					sa.setDuration(500);
+					AnimationSet set = new AnimationSet(false);
+					set.addAnimation(aa);
+					set.addAnimation(sa);
+
+					contentView.startAnimation(set);
+
+				}
+
+			}
+		});
+	}
+
+	private void fillData() {
+		ll_loading.setVisibility(View.VISIBLE);
+		new Thread() {
+			public void run() {
+				appInfos = AppInfoProvider
+						.getAllAppInfos(getApplicationContext());
+				userappInfos = new ArrayList<AppInfo>();
+				systemappInfos = new ArrayList<AppInfo>();
+				for (AppInfo appInfo : appInfos) {
+					if (appInfo.isUser()) {
+						userappInfos.add(appInfo);
+					} else {
+						systemappInfos.add(appInfo);
+					}
+				}
+				handler.sendEmptyMessage(0);
+			};
+		}.start();
+
+	}
+
+	class AppAdapter extends BaseAdapter {
+
+		@Override
+		public int getCount() {
+			// +1+1就是两个TextView
+			return userappInfos.size() + 1 + systemappInfos.size() + 1;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			AppInfo appInfo;
+			if (position == 0) {
+				TextView tv = new TextView(getApplicationContext());
+				tv.setBackgroundColor(Color.GRAY);
+				tv.setTextColor(Color.WHITE);
+				tv.setText("用户程序(" + userappInfos.size() + ")");
+				return tv;
+			} else if (position == (userappInfos.size() + 1)) {
+				TextView tv = new TextView(getApplicationContext());
+				tv.setBackgroundColor(Color.GRAY);
+				tv.setTextColor(Color.WHITE);
+				tv.setText("系统程序(" + systemappInfos.size() + ")");
+				return tv;
+			} else if (position <= userappInfos.size()) {
+				//
+				int newpostion = position - 1;
+				appInfo = userappInfos.get(newpostion);
+			} else {
+				int newpostion = position - userappInfos.size() - 1 - 1;
+				appInfo = systemappInfos.get(newpostion);
+			}
+			View view;
+			ViewHolder holder;
+			if (convertView != null && convertView instanceof RelativeLayout) {
+				view = convertView;
+				holder = (ViewHolder) view.getTag();
+			} else {
+				view = View.inflate(AppManagerActivity.this,
+						R.layout.list_app_item, null);
+				holder = new ViewHolder();
+				holder.iv_icon = (ImageView) view.findViewById(R.id.iv_icon);
+				holder.tv_name = (TextView) view.findViewById(R.id.tv_name);
+				holder.tv_location = (TextView) view
+						.findViewById(R.id.tv_location);
+				view.setTag(holder);
+			}
+			// 得到某个应用的信息
+			// AppInfo appInfo = appInfos.get(position);
+			// AppInfo appInfo;
+			// if(position < userappInfos.size()){
+			// //取用户应用集合
+			// appInfo = userappInfos.get(position);
+			// }else{
+			// //取系统应用集合
+			// int newpostion = position- userappInfos.size();
+			// appInfo = systemappInfos.get(newpostion);
+			// }
+
+			holder.iv_icon.setImageDrawable(appInfo.getIcon());
+			holder.tv_name.setText(appInfo.getName());
+			if (appInfo.isRom()) {
+				// 安装在手机内部
+				holder.tv_location.setText("手机内部");
+			} else {
+				holder.tv_location.setText("外部存储");
+			}
+
+			return view;
+		}
+
+		@Override
+		public Object getItem(int position) {
+			AppInfo appInfo;
+			if (position == 0) {
+				return null;
+			} else if (position == (userappInfos.size() + 1)) {
+				return null;
+			} else if (position <= userappInfos.size()) {
+				//
+				int newpostion = position - 1;
+				appInfo = userappInfos.get(newpostion);
+			} else {
+				int newpostion = position - userappInfos.size() - 1 - 1;
+				appInfo = systemappInfos.get(newpostion);
+			}
+			return appInfo;
+		}
+
+		@Override
+		public long getItemId(int position) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+	}
+
+	static class ViewHolder {
+		ImageView iv_icon;
+		TextView tv_name;
+		TextView tv_location;
+	}
+
+	/**
+	 * 得到任意目录的可用空间
+	 * 
+	 * @param path
+	 * @return
+	 */
+	private String getSpaceAvail(String path) {
+
+		StatFs statFs = new StatFs(path);
+		// 每一块有多大
+		long size = statFs.getBlockSize();
+		// 一共有多少块
+		long blocks = statFs.getAvailableBlocks();
+
+		return Formatter.formatFileSize(this, size * blocks);
+	}
+
+	private void dimssPopupWindow() {
+		if (window != null && window.isShowing()) {
+			window.dismiss();
+			window = null;
+		}
+	}
+
+	@Override
+	public void onClick(View v) {
+		dimssPopupWindow();
+		switch (v.getId()) {
+		case R.id.ll_uninstall:// 卸载软件
+			if(appInfo!= null&&appInfo.isUser()){
+				uninstallApp(appInfo);
+			}else{
+				Toast.makeText(this, "需要root权限才能卸载", 1).show();
+			}
+
+			break;
+
+		case R.id.ll_start:// 启动软件
+			if(appInfo!= null){
+				startApp(appInfo);
+			}
+			break;
+		case R.id.ll_share:// 分享软件
+			if(appInfo!= null){
+				shareApp(appInfo);
+			}
+			break;
+		}
+
+	}
+
+	/**
+	 * 启动某个软件
+	 * @param appInfo
+	 */
+	private void startApp(AppInfo appInfo) {
+		Intent intent = new Intent();
+		//得到第一个Activiy
+		PackageManager pm = getPackageManager();
+		String packName = appInfo.getPackName();
+		try {
+			PackageInfo packInfo = pm.getPackageInfo(packName, PackageManager.GET_ACTIVITIES);
+			ActivityInfo[] activityInfo = packInfo.activities;
+			if(activityInfo!= null&&activityInfo.length>0){
+				ActivityInfo info = activityInfo[0];
+				String name = info.name;
+				intent.setClassName(packName, name);
+				startActivity(intent);
+				
+			}else{
+				Toast.makeText(getApplicationContext(), "这个应用没有页面", 1).show();
+			}
+			
+			
+		} catch (NameNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			Toast.makeText(getApplicationContext(), "启动失败", 1).show();
+		}
+		
+	}
+
+	/**
+	 * 分享某个软件
+	 * 分享到QQ空间，微博，微信
+	 * @param appInfo
+	 */
+	private void shareApp(AppInfo appInfo) {
+		Intent intent = new Intent();
+//		<action android:name="android.intent.action.SEND" />
+//        <category android:name="android.intent.category.DEFAULT" />
+//        <data android:mimeType="text/plain" />
+		intent.setAction("android.intent.action.SEND");
+		intent.setType("text/plain");
+		intent.putExtra(Intent.EXTRA_TEXT, "推荐一款牛B软件给你名叫："+appInfo.getName()+",下载地址是：https://play.google.com/store/apps/details?id="+appInfo.getPackName());
+		startActivity(intent);
+		
+	}
+
+	/**
+	 * 卸载软件
+	 * @param appInfo
+	 */
+	private void uninstallApp(AppInfo appInfo) {
+		Intent intent = new Intent();
+//		 <intent-filter>
+//         <action android:name="android.intent.action.VIEW" />
+//         <action android:name="android.intent.action.DELETE" />
+//         <category android:name="android.intent.category.DEFAULT" />
+//         <data android:scheme="package" />
+//     </intent-filter>
+		intent.setAction("android.intent.action.DELETE");
+		intent.addCategory("android.intent.category.DEFAULT");
+		intent.setData(Uri.parse("package:"+appInfo.getPackName()));
+		startActivityForResult(intent, 0);
+		
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		super.onActivityResult(requestCode, resultCode, data);
+		fillData();
+	}
+
+}

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.itheima.mobilesafe"
+    android:installLocation="auto"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="10"
+        android:targetSdkVersion="16" />
+
+    <instrumentation
+        android:name="android.test.InstrumentationTestRunner"
+        android:targetPackage="com.itheima.mobilesafe" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <uses-permission android:name="android.permission.READ_CALL_LOG"/>
+    <uses-permission android:name="android.permission.WRITE_CALL_LOG"/>
+    <uses-permission android:name="android.permission.READ_SMS"/>
+    <uses-permission android:name="android.permission.WRITE_SMS"/>
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <uses-library android:name="android.test.runner" />
+
+        <activity
+            android:name="com.itheima.mobilesafe.SplashActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.itheima.mobilesafe.activitys.HomeActivity" >
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <action android:name="com.itheima.mobilesafe.enterhome" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.itheima.mobilesafe.activitys.SettingActivity" />
+        <activity android:name="com.itheima.mobilesafe.activitys.LostFindActivity" />
+        <activity android:name="com.itheima.mobilesafe.activitys.Setup1Activity" />
+        <activity android:name="com.itheima.mobilesafe.activitys.Setup2Activity" />
+        <activity android:name="com.itheima.mobilesafe.activitys.Setup3Activity" />
+        <activity android:name="com.itheima.mobilesafe.activitys.Setup4Activity" />
+        <activity android:name="com.itheima.mobilesafe.activitys.SelectContactActivity" />
+        <activity android:name="com.itheima.mobilesafe.activitys.AToolsActivity" />
+        <activity android:name="com.itheima.mobilesafe.activitys.NumberAddressQueryActivity" />
+        <activity android:name="com.itheima.mobilesafe.activitys.DragViewActivity" />
+        <activity android:name="com.itheima.mobilesafe.activitys.CallSmsSafeActivity" />
+
+        <activity android:name="com.itheima.mobilesafe.activitys.AppManagerActivity"/>
+        <activity android:name="com.itheima.mobilesafe.activitys.CommonNumberQueryActivity"/>
+        <activity android:name="com.itheima.mobilesafe.activitys.TaskManagerActivity"/>
+        
+        <receiver android:name="com.itheima.mobilesafe.receiver.BootCompleteReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.itheima.mobilesafe.receiver.SMSReceiver" >
+            <intent-filter android:priority="1000" >
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+        <!--
+        <receiver android:name="com.itheima.mobilesafe.receiver.OutCallReceiver">
+            <intent-filter >
+                <action android:name="android.intent.action.NEW_OUTGOING_CALL"/>
+            </intent-filter>
+        </receiver>
+        -->
+
+        <service android:name="com.itheima.mobilesafe.service.GPSService" />
+        <service android:name="com.itheima.mobilesafe.service.AddressService" />
+        <service android:name="com.itheima.mobilesafe.service.CallSmsSafeService"/>
+    </application>
+
+</manifest>
