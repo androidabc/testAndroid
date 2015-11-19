@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="55dip"
+        android:background="#8866ff00"
+        android:gravity="center"
+        android:text="进程的设置"
+        android:textColor="#000000"
+        android:textSize="20sp" />
+
+    <CheckBox
+        android:id="@+id/ch_show_system_process"
+        android:text="当前状态：显示系统进程"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+    
+      <CheckBox
+        android:id="@+id/ch_kill_process"
+        android:text="当前状态：锁屏时杀死后台进程"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

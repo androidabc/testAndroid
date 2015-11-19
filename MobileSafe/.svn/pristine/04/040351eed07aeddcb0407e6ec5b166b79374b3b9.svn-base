@@ -1,0 +1,105 @@
+package com.itheima.mobilesafe.activitys;
+
+import java.util.List;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.StatFs;
+import android.text.format.Formatter;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.itheima.mobilesafe.R;
+import com.itheima.mobilesafe.domain.AppInfo;
+import com.itheima.mobilesafe.engine.AppInfoProvider;
+
+public class AppManagerActivity extends Activity {
+	private TextView tv_rom_avail;
+	private TextView tv_sd_avail;
+	
+	private ListView list_app_item;
+	private LinearLayout ll_loading;
+	private List<AppInfo> appInfos;
+	private Handler handler = new Handler(){
+		public void handleMessage(android.os.Message msg) {
+			
+		};
+	};
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_app_manager);
+		tv_rom_avail = (TextView) findViewById(R.id.tv_rom_avail);
+		tv_sd_avail = (TextView) findViewById(R.id.tv_sd_avail);
+		list_app_item = (ListView) findViewById(R.id.list_app_item);
+		ll_loading = (LinearLayout) findViewById(R.id.ll_loading);
+		tv_rom_avail.setText("内存可用："+getSpaceAvail(Environment.getDataDirectory().getAbsolutePath()));
+		tv_sd_avail.setText("sdcard可用："+getSpaceAvail(Environment.getExternalStorageDirectory().getAbsolutePath()));
+		list_app_item.setAdapter(adapter);
+		
+		fillData();
+	}
+	
+	private void fillData() {
+		ll_loading.setVisibility(View.VISIBLE);
+		new Thread(){
+			public void run() {
+				appInfos = AppInfoProvider.getAllAppInfos(getApplicationContext());
+				handler.sendEmptyMessage(0);
+			};
+		}.start();
+		
+	}
+
+	class AppAdapter extends BaseAdapter{
+
+		@Override
+		public int getCount() {
+			return appInfos.size();
+		}
+		
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object getItem(int position) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public long getItemId(int position) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		
+		
+	}
+	/**
+	 * 得到任意目录的可用空间
+	 * @param path
+	 * @return
+	 */
+	private String getSpaceAvail(String path){
+		
+		
+		StatFs statFs = new StatFs(path);
+		//每一块有多大
+		long size =  statFs.getBlockSize();
+		//一共有多少块
+		long blocks = statFs.getAvailableBlocks();
+		
+		return Formatter.formatFileSize(this, size*blocks);
+	}
+
+}

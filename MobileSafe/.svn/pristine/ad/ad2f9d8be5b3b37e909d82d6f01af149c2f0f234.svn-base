@@ -1,0 +1,80 @@
+package com.itheima.mobilesafe.activitys;
+
+import com.itheima.mobilesafe.R;
+
+import android.app.Activity;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnTouchListener;
+import android.widget.ImageView;
+
+public class DragViewActivity extends Activity {
+
+	protected static final String TAG = null;
+	private ImageView iv_drag;
+	private SharedPreferences sp;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_drag_view);
+		iv_drag = (ImageView) findViewById(R.id.iv_drag);
+		sp = getSharedPreferences("config", MODE_PRIVATE);
+		iv_drag.setOnTouchListener(new OnTouchListener() {
+			int startX = 0;
+			int startY = 0;
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+
+				switch (event.getAction()) {
+				case MotionEvent.ACTION_DOWN:// 手指第一次按下
+					// 1.第一次按下的坐标
+					startX = (int) event.getRawX();
+					startY = (int) event.getRawY();
+					Log.i(TAG, "第一次按下坐标(" + startX + "," + startY + ")");
+
+					break;
+
+				case MotionEvent.ACTION_MOVE:// 手指在屏幕上移动
+
+					// 2.来到新的坐标
+					int newX = (int) event.getRawX();
+					int newY = (int) event.getRawY();
+
+					// 3.计算偏移量
+					int dX = newX - startX;
+					int dY = newY - startY;
+					Log.i(TAG, "偏移量(" + dX + "," + dY + ")");
+					// 4.根据偏移量更新空间位置
+					iv_drag.layout(iv_drag.getLeft() + dX, iv_drag.getTop()
+							+ dY, iv_drag.getRight() + dX, iv_drag.getBottom()
+							+ dY);
+					
+					//5.重新记录坐标
+					startX = (int) event.getRawX();
+					startY = (int) event.getRawY();
+
+					break;
+
+				case MotionEvent.ACTION_UP:// 手指离开屏幕
+					Editor editor = sp.edit();
+					editor.putInt("lastX", iv_drag.getLeft());
+					editor.putInt("lastY", iv_drag.getTop());
+					editor.commit();
+					Log.i(TAG, "离开(" + iv_drag.getLeft() + "," + iv_drag.getTop() + ")");
+					
+
+					break;
+				}
+
+				return true;
+			}
+		});
+	}
+
+}

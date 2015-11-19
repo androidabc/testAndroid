@@ -1,0 +1,157 @@
+# view AndroidManifest.xml #generated:12
+-keep class android.test.InstrumentationTestRunner { <init>(...); }
+
+# view AndroidManifest.xml #generated:51
+-keep class com.itheima.mobilesafe.SplashActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:74
+-keep class com.itheima.mobilesafe.activitys.AToolsActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:89
+-keep class com.itheima.mobilesafe.activitys.AntiVirusActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:82
+-keep class com.itheima.mobilesafe.activitys.AppLockActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:78
+-keep class com.itheima.mobilesafe.activitys.AppManagerActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:77
+-keep class com.itheima.mobilesafe.activitys.CallSmsSafeActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:95
+-keep class com.itheima.mobilesafe.activitys.CleanActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:93
+-keep class com.itheima.mobilesafe.activitys.CleanCacheActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:94
+-keep class com.itheima.mobilesafe.activitys.CleanSdcardActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:79
+-keep class com.itheima.mobilesafe.activitys.CommonNumberQueryActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:76
+-keep class com.itheima.mobilesafe.activitys.DragViewActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:83
+-keep class com.itheima.mobilesafe.activitys.EnterPwdActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:60
+-keep class com.itheima.mobilesafe.activitys.HomeActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:68
+-keep class com.itheima.mobilesafe.activitys.LostFindActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:75
+-keep class com.itheima.mobilesafe.activitys.NumberAddressQueryActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:73
+-keep class com.itheima.mobilesafe.activitys.SelectContactActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:67
+-keep class com.itheima.mobilesafe.activitys.SettingActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:69
+-keep class com.itheima.mobilesafe.activitys.Setup1Activity { <init>(...); }
+
+# view AndroidManifest.xml #generated:70
+-keep class com.itheima.mobilesafe.activitys.Setup2Activity { <init>(...); }
+
+# view AndroidManifest.xml #generated:71
+-keep class com.itheima.mobilesafe.activitys.Setup3Activity { <init>(...); }
+
+# view AndroidManifest.xml #generated:72
+-keep class com.itheima.mobilesafe.activitys.Setup4Activity { <init>(...); }
+
+# view AndroidManifest.xml #generated:80
+-keep class com.itheima.mobilesafe.activitys.TaskManagerActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:81
+-keep class com.itheima.mobilesafe.activitys.TaskManagerSettingActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:87
+-keep class com.itheima.mobilesafe.activitys.TrafficManagerActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:123
+-keep class com.itheima.mobilesafe.receiver.AutoKillProcessReceiver { <init>(...); }
+
+# view AndroidManifest.xml #generated:96
+-keep class com.itheima.mobilesafe.receiver.BootCompleteReceiver { <init>(...); }
+
+# view AndroidManifest.xml #generated:114
+-keep class com.itheima.mobilesafe.receiver.MyAppWidget { <init>(...); }
+
+# view AndroidManifest.xml #generated:101
+-keep class com.itheima.mobilesafe.receiver.SMSReceiver { <init>(...); }
+
+# view AndroidManifest.xml #generated:132
+-keep class com.itheima.mobilesafe.service.AddressService { <init>(...); }
+
+# view AndroidManifest.xml #generated:133
+-keep class com.itheima.mobilesafe.service.CallSmsSafeService { <init>(...); }
+
+# view AndroidManifest.xml #generated:131
+-keep class com.itheima.mobilesafe.service.GPSService { <init>(...); }
+
+# view AndroidManifest.xml #generated:134
+-keep class com.itheima.mobilesafe.service.KillProcessService { <init>(...); }
+
+# view AndroidManifest.xml #generated:135
+-keep class com.itheima.mobilesafe.service.UpdateAppWidgetService { <init>(...); }
+
+# view AndroidManifest.xml #generated:136
+-keep class com.itheima.mobilesafe.service.WatchDogService { <init>(...); }
+
+# view res/layout/activity_home.xml #generated:23
+-keep class com.itheima.mobilesafe.ui.FocusedTextView { <init>(...); }
+
+# view res/layout/activity_setting.xml #generated:42
+# view res/layout/activity_setting.xml #generated:47
+-keep class com.itheima.mobilesafe.ui.SettingClickView { <init>(...); }
+
+# view res/layout/activity_setting.xml #generated:26
+# view res/layout/activity_setting.xml #generated:34
+# view res/layout/activity_setting.xml #generated:52
+# view res/layout/activity_setting.xml #generated:60
+# view res/layout/activity_setup2.xml #generated:25
+-keep class com.itheima.mobilesafe.ui.SettingItemView { <init>(...); }
+
+# onClick res/layout/activity_callsms_safe.xml #generated:20
+-keepclassmembers class * { *** addBlackNumber(...); }
+
+# onClick res/layout/activity_clean_cache.xml #generated:20
+-keepclassmembers class * { *** cleanCache(...); }
+
+# onClick res/layout/activity_atools.xml #generated:44
+-keepclassmembers class * { *** commonNumberQuery(...); }
+
+# onClick res/layout/activity_atools.xml #generated:58
+-keepclassmembers class * { *** enterApplock(...); }
+
+# onClick res/layout/activity_task_manager.xml #generated:95
+-keepclassmembers class * { *** killAll(...); }
+
+# onClick res/layout/activity_atools.xml #generated:16
+# onClick res/layout/activity_number_address_query.xml #generated:23
+-keepclassmembers class * { *** numberAddressQuery(...); }
+
+# onClick res/layout/activity_enter_password.xml #generated:35
+-keepclassmembers class * { *** ok(...); }
+
+# onClick res/layout/activity_lostfind.xml #generated:76
+# onClick res/layout/activity_task_manager.xml #generated:104
+-keepclassmembers class * { *** reEnterSetting(...); }
+
+# onClick res/layout/activity_task_manager.xml #generated:77
+-keepclassmembers class * { *** selectAll(...); }
+
+# onClick res/layout/activity_setup3.xml #generated:26
+-keepclassmembers class * { *** selectContact(...); }
+
+# onClick res/layout/activity_atools.xml #generated:30
+-keepclassmembers class * { *** smsBackup(...); }
+
+# onClick res/layout/activity_task_manager.xml #generated:86
+-keepclassmembers class * { *** unSelect(...); }
+

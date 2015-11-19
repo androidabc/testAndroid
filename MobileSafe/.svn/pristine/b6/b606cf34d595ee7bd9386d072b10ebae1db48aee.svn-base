@@ -1,0 +1,105 @@
+package com.itheima.mobilesafe.activitys;
+
+import java.util.List;
+
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.os.Bundle;
+import android.os.Handler;
+import android.text.format.Formatter;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.itheima.mobilesafe.R;
+import com.itheima.mobilesafe.domain.TaskInfo;
+import com.itheima.mobilesafe.engine.TaskInfoProvider;
+import com.itheima.mobilesafe.utils.SystemInfoUtils;
+
+public class TaskManagerActivity extends Activity {
+
+	private TextView tv_run_process;
+	private TextView tv_avail_ram;
+	private ActivityManager am;
+
+	private ListView list_task_item;
+	private LinearLayout ll_loading;
+	private List<TaskInfo> taskInfos;
+	private TaskManagerAdpter adpter;
+	private Handler handler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+
+			ll_loading.setVisibility(View.INVISIBLE);
+			adpter = new TaskManagerAdpter();
+			list_task_item.setAdapter(adpter);
+		};
+	};
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+		setContentView(R.layout.activity_task_manager);
+		tv_run_process = (TextView) findViewById(R.id.tv_run_process);
+		tv_avail_ram = (TextView) findViewById(R.id.tv_avail_ram);
+		tv_run_process.setText("运行中进程:"
+				+ SystemInfoUtils.getRunngProcessCount(this) + "个");
+		tv_avail_ram.setText("剩余/总内存:"
+				+ Formatter.formatFileSize(this,
+						SystemInfoUtils.getAvailRam(this))
+				+ "/"
+				+ Formatter.formatFileSize(this,
+						SystemInfoUtils.getTotalRam(this)));
+		list_task_item = (ListView) findViewById(R.id.list_task_item);
+		ll_loading = (LinearLayout) findViewById(R.id.ll_loading);
+		fillData();
+	}
+
+	// 加载数据
+	private void fillData() {
+		ll_loading.setVisibility(View.VISIBLE);
+		new Thread() {
+			public void run() {
+				taskInfos = TaskInfoProvider
+						.getTaskInfos(TaskManagerActivity.this);
+				handler.sendEmptyMessage(0);
+			};
+		}.start();
+
+	}
+	
+	private class TaskManagerAdpter extends BaseAdapter{
+
+		@Override
+		public int getCount() {
+			// TODO Auto-generated method stub
+			return taskInfos.size();
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			TextView view = new TextView(getApplicationContext());
+			view.setTextSize(20);
+			view.setText(taskInfos.get(position).toString());
+			return view;
+		}
+		@Override
+		public Object getItem(int position) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public long getItemId(int position) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		
+		
+	}
+
+}
